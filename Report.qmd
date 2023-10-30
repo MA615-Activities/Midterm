@@ -1,0 +1,42 @@
+---
+title: "Report"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: libraries and data
+suppressPackageStartupMessages(library(jsonlite))
+suppressPackageStartupMessages(library(httr))
+suppressPackageStartupMessages(library(tidyverse))
+
+noaa2020 <- read.csv("NOAA2020.csv")
+noaa2021 <- read.csv("NOAA2021.csv")
+declarations <- read.csv("FEMAdeclaration.csv")
+assistance <- read.csv("FEMAassistance.csv")
+```
+
+```{r}
+#| label: cleaning all data
+
+#get only floods from NOAA 2020
+noaa2020 <- noaa2020 %>% filter(str_detect(EVENT_TYPE, "Flood"))
+#get only floods from NOAA 2021
+noaa2021 <- noaa2021 %>% filter(str_detect(EVENT_TYPE, "Flood"))
+#get only floods from FEMA declarations
+declarations <- declarations %>% filter(incidentType == "Flood")
+#get only floods from 2020 and 2021
+declarations <- declarations %>% filter(str_detect(incidentBeginDate, "^2020") | str_detect(incidentBeginDate, "^2021"))
+#eliminate fire disasters from FEMA assistance
+assistance <- assistance %>% filter(disasterNumber >= 0001 & disasterNumber <= 1999 | disasterNumber >= 3000 & disasterNumber <= 3999 | disasterNumber >= 4000 & disasterNumber <= 4999)
+#fix values of damage property and damage crops
+noaa2020$DAMAGE_PROPERTY <- ifelse(noaa2020$DAMAGE_PROPERTY == "0.00K", "0", noaa2020$DAMAGE_PROPERTY)
+
+
+
+```
+
+
+
+
+

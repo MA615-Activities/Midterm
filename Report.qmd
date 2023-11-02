@@ -9,6 +9,7 @@ editor: visual
 suppressPackageStartupMessages(library(jsonlite))
 suppressPackageStartupMessages(library(httr))
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(lubridate))
 
 noaa2020 <- read.csv("NOAA2020.csv")
 noaa2021 <- read.csv("NOAA2021.csv")
@@ -24,16 +25,57 @@ noaa2020 <- noaa2020 %>% filter(str_detect(EVENT_TYPE, "Flood"))
 #get only floods from NOAA 2021
 noaa2021 <- noaa2021 %>% filter(str_detect(EVENT_TYPE, "Flood"))
 #get only floods from FEMA declarations
-declarations <- declarations %>% filter(incidentType == "Flood")
-#get only floods from 2020 and 2021
-declarations <- declarations %>% filter(str_detect(incidentBeginDate, "^2020") | str_detect(incidentBeginDate, "^2021"))
-#eliminate fire disasters from FEMA assistance
-assistance <- assistance %>% filter(disasterNumber >= 0001 & disasterNumber <= 1999 | disasterNumber >= 3000 & disasterNumber <= 3999 | disasterNumber >= 4000 & disasterNumber <= 4999)
-#fix values of damage property and damage crops
+declarations <- declarations %>% filter(incidentType == "Flood" | incidentType == "Severe Storm" | incidentType == "Coastal Storm" | incidentType == "Tropical Storm" | incidentType == "Tsunami" | incidentType == "Typhoon")
+#divide date of incident begin for FEMA declarations 
+declarations <- declarations %>% separate_wider_delim(cols = incidentBeginDate,
+                                                      delim = "-", 
+                                                      names = c("year", "month", "day"),
+                                                      too_many = "error",
+                                                      too_few = "error")
+declarations$day <- str_replace(declarations$day, "T00:00:00.000Z", "")
+#keep only 2020 and 2021 years
+declarations <- declarations %>% filter(year == "2021" | year == "2020")
+#add assistance data to declarations data, want to keep all declarations rows
+fema <- left_join(declarations, assistance, by = "disasterNumber")
+#divide dates in NOAA
+noaa2020$begin_year <- substr(noaa2020$BEGIN_YEARMONTH, start = 1, stop = 4)
+noaa2020$begin_month <- substr(noaa2020$BEGIN_YEARMONTH, start = 5, stop = 7)
+noaa2020 <- noaa2020 %>% select(begin_year, begin_month, everything()) %>% select(-3)
+noaa2021$begin_year <- substr(noaa2021$BEGIN_YEARMONTH, start = 1, stop = 4)
+noaa2021$begin_month <- substr(noaa2021$BEGIN_YEARMONTH, start = 5, stop = 7)
+noaa2021 <- noaa2021 %>% select(begin_year, begin_month, everything()) %>% select(-3)
+#fix values of damage property and damage crops in 2020 and 2021
 noaa2020$DAMAGE_PROPERTY <- ifelse(noaa2020$DAMAGE_PROPERTY == "0.00K", "0", noaa2020$DAMAGE_PROPERTY)
+noaa2020$unit <- str_sub(noaa2020$DAMAGE_PROPERTY, -1)
+noaa2020$DAMAGE_PROPERTY <- str_replace(noaa2020$DAMAGE_PROPERTY, "K", "")
+noaa2020$DAMAGE_PROPERTY <- str_replace(noaa2020$DAMAGE_PROPERTY, "M", "")
+noaa2020$DAMAGE_PROPERTY <- as.numeric(noaa2020$DAMAGE_PROPERTY)
+noaa2020$DAMAGE_PROPERTY <- ifelse(noaa2020$unit == "K", noaa2020$DAMAGE_PROPERTY*1000, noaa2020$DAMAGE_PROPERTY)
+noaa2020$DAMAGE_PROPERTY <- ifelse(noaa2020$unit == "M", noaa2020$DAMAGE_PROPERTY*1000000, noaa2020$DAMAGE_PROPERTY)
 
+noaa2020$DAMAGE_CROPS <- ifelse(noaa2020$DAMAGE_CROPS == "0.00K", "0", noaa2020$DAMAGE_CROPS)
+noaa2020$unit <- str_sub(noaa2020$DAMAGE_CROPS, -1)
+noaa2020$DAMAGE_CROPS <- str_replace(noaa2020$DAMAGE_CROPS, "K", "")
+noaa2020$DAMAGE_CROPS <- str_replace(noaa2020$DAMAGE_CROPS, "M", "")
+noaa2020$DAMAGE_CROPS <- as.numeric(noaa2020$DAMAGE_CROPS)
+noaa2020$DAMAGE_CROPS <- ifelse(noaa2020$unit == "K", noaa2020$DAMAGE_CROPS*1000, noaa2020$DAMAGE_CROPS)
+noaa2020$DAMAGE_CROPS <- ifelse(noaa2020$unit == "M", noaa2020$DAMAGE_CROPS*1000000, noaa2020$DAMAGE_CROPS)
 
+noaa2021$DAMAGE_PROPERTY <- ifelse(noaa2021$DAMAGE_PROPERTY == "0.00K", "0", noaa2021$DAMAGE_PROPERTY)
+noaa2021$unit <- str_sub(noaa2021$DAMAGE_PROPERTY, -1)
+noaa2021$DAMAGE_PROPERTY <- str_replace(noaa2021$DAMAGE_PROPERTY, "K", "")
+noaa2021$DAMAGE_PROPERTY <- str_replace(noaa2021$DAMAGE_PROPERTY, "M", "")
+noaa2021$DAMAGE_PROPERTY <- as.numeric(noaa2021$DAMAGE_PROPERTY)
+noaa2021$DAMAGE_PROPERTY <- ifelse(noaa2021$unit == "K", noaa2021$DAMAGE_PROPERTY*1000, noaa2021$DAMAGE_PROPERTY)
+noaa2021$DAMAGE_PROPERTY <- ifelse(noaa2021$unit == "M", noaa2021$DAMAGE_PROPERTY*1000000, noaa2021$DAMAGE_PROPERTY)
 
+noaa2021$DAMAGE_CROPS <- ifelse(noaa2021$DAMAGE_CROPS == "0.00K", "0", noaa2021$DAMAGE_CROPS)
+noaa2021$unit <- str_sub(noaa2021$DAMAGE_CROPS, -1)
+noaa2021$DAMAGE_CROPS <- str_replace(noaa2021$DAMAGE_CROPS, "K", "")
+noaa2021$DAMAGE_CROPS <- str_replace(noaa2021$DAMAGE_CROPS, "M", "")
+noaa2021$DAMAGE_CROPS <- as.numeric(noaa2021$DAMAGE_CROPS)
+noaa2021$DAMAGE_CROPS <- ifelse(noaa2021$unit == "K", noaa2021$DAMAGE_CROPS*1000, noaa2021$DAMAGE_CROPS)
+noaa2021$DAMAGE_CROPS <- ifelse(noaa2021$unit == "M", noaa2021$DAMAGE_CROPS*1000000, noaa2021$DAMAGE_CROPS)
 ```
 
 

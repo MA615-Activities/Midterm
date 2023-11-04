@@ -1,15 +1,40 @@
 ---
-title: "Report"
+title: "Flood Disasters in 2020 and 2021: Exploratory Data Analysis Report"
+author: Maysen Pagan
+date: 2023 November 6
 format: html
 editor: visual
+number-sections: true
 ---
 
+![](https://media-cldnry.s-nbcnews.com/image/upload/t_fit-1240w,f_auto,q_auto:best/rockcms/2023-10/231006-new-york-rain-flood-mjf-1533-49a371.jpg)
+
+# Motivations and Initial Questions
+
+# The Data
+
+The data for this natural disaster analysis begins with two datasets from the National Oceanic and Atmospheric Administration's (NOAA) National Weather Service (NWS) and two datasets from the Federal Emergency Management Agency (FEMA).
+
+## NOAA
+
+Data from NOAA provides recordings of all storm events from 2020 and 2021. Data sets from each year provide significant information including the beginning and ending time and date of the disaster, the type of disaster, the location of the disaster, as well as injuries, deaths, and property damage as a result of the disaster. In each year, around 61,000 storm events occurred resulting in around 61,000 rows with 17 variables for each dataset. The raw data can be found [here](https://www.ncdc.noaa.gov/stormevents/ftp.jsp).
+
+## FEMA
+
+One of the datasets from FEMA is the Disaster Declarations Summary which provides information on all federally declared disasters beginning from the year 1953. The data lists the disaster declaration type of either a major disaster, fire management, or emergency declaration. Additionally, a more specific description of the incident is provided as variable `incidentType` as well as what recovery program was declared for the disaster. The other FEMA Disaster Summaries dataset proides information on financial assistance provided to the communities affected by select events. It includes the number of approved Individual Assistance requests, and individual, public assistance, and hazard mitigation grant amounts. The raw data can be found [here](https://www.fema.gov/about/openfema/data-sets).
+
+
+# Data Organization and Cleaning
+
 ```{r}
+#| echo: false
+#| message: false
 #| label: libraries and data
 suppressPackageStartupMessages(library(jsonlite))
 suppressPackageStartupMessages(library(httr))
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(gridExtra))
 
 noaa2020 <- read.csv("NOAA2020.csv")
 noaa2021 <- read.csv("NOAA2021.csv")
@@ -17,7 +42,21 @@ declarations <- read.csv("FEMAdeclaration.csv")
 assistance <- read.csv("FEMAassistance.csv")
 ```
 
+## Dates and Disaster Event
+
+The first step in organizing the data to prepare for exploratory data analysis is filtering all the data sets to only include the disaster event of floods in the years 2020 and 2021. Both NOAA datasets are already filtered by year, so they were then filtered to contain rows where the variable `EVENT_TYPE` included the string `Flood`. Following this filter, the NOAA datasets in 2020 and 2021 include the injury, deaths, and property damage for flash floods, floods, coastal floods, and lakeshore floods. Additionally, the data from the FEMA Disaster Declarations Summary was filtered so that the variable `incidentType` only includes floods, severe storms, coastal storms, tropical storms, tsunamis, and typhoons that began in 2020 and 2021. Although all of these disasters are not explicitly floods, they were still included in analysis as they are disasters may have resulted in flooding in communities.
+
+## Joining
+
+The assistance data from FEMA includes aid provided to communities from select disasters. This data set does not provide the location or type of disaster but rather only includes the unique number assigned to each disaster by FEMA. The Disaster Declarations Summary from FEMA also includes the unique disaster number along with location and disaster type. These two data sets were combined using a `left_join` so that every row in the Disaster Declarations Summary data now includes the aid provided from the assistance data. 
+
+## Damage to Property and Crops
+
+The final step in cleaning the data for exploratory data analysis was converting `DAMAGE_PROPERTY` and `DAMAGE_CROPS` from the NOAA datasets to dollar values. The values for these variables were characters with a decimal and a "K" for thousands of dollars or "M" for millions of dollars. To convert to numerical dollar values, the characters "K" and "M" were extracted from each variable column and each column was then converted to a numeric value then multiplied by 1000 or 1000000 depending on whether the extracted character was a "K" or "M" respectively. 
+
 ```{r}
+#| echo: false
+#| message: false
 #| label: cleaning all data
 
 #get only floods from NOAA 2020
@@ -35,6 +74,8 @@ declarations <- declarations %>% separate_wider_delim(cols = incidentBeginDate,
 declarations$day <- str_replace(declarations$day, "T00:00:00.000Z", "")
 #keep only 2020 and 2021 years
 declarations <- declarations %>% filter(year == "2021" | year == "2020")
+
+
 #add assistance data to declarations data, want to keep all declarations rows
 fema <- left_join(declarations, assistance, by = "disasterNumber")
 #divide dates in NOAA
@@ -76,6 +117,118 @@ noaa2021$DAMAGE_CROPS <- str_replace(noaa2021$DAMAGE_CROPS, "M", "")
 noaa2021$DAMAGE_CROPS <- as.numeric(noaa2021$DAMAGE_CROPS)
 noaa2021$DAMAGE_CROPS <- ifelse(noaa2021$unit == "K", noaa2021$DAMAGE_CROPS*1000, noaa2021$DAMAGE_CROPS)
 noaa2021$DAMAGE_CROPS <- ifelse(noaa2021$unit == "M", noaa2021$DAMAGE_CROPS*1000000, noaa2021$DAMAGE_CROPS)
+```
+
+# Exploratory Data Analysis
+
+each year, number of each of four kinds of floods each month line graph
+
+```{r}
+#flash floods in 2020
+plot1 <- noaa2020 %>% filter(EVENT_TYPE=="Flash Flood") %>% 
+  group_by(MONTH_NAME) %>% summarize(num_flash_floods = n()) %>% 
+  mutate(MONTH_NAME = factor(MONTH_NAME, levels = month.name)) %>% 
+  arrange(MONTH_NAME) %>% 
+  ggplot(aes(MONTH_NAME, num_flash_floods, group = 1)) + 
+  geom_point() + 
+  geom_line() +
+  labs(x = "Month", y = "Number of Flash Floods") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+#floods in 2020
+plot2 <- noaa2020 %>% filter(EVENT_TYPE=="Flood") %>% 
+  group_by(MONTH_NAME) %>% summarize(num_floods = n()) %>% 
+  mutate(MONTH_NAME = factor(MONTH_NAME, levels = month.name)) %>% 
+  arrange(MONTH_NAME) %>% 
+  ggplot(aes(MONTH_NAME, num_floods, group = 1)) + 
+  geom_point() + 
+  geom_line() +
+  labs(x = "Month", y = "Number of Flash Floods") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+#coastal floods in 2020
+plot3 <- noaa2020 %>% filter(EVENT_TYPE=="Coastal Flood") %>% 
+  group_by(MONTH_NAME) %>% summarize(num_coastal_floods = n()) %>% 
+  add_row(MONTH_NAME = "March", num_coastal_floods = 0) %>% 
+  mutate(MONTH_NAME = factor(MONTH_NAME, levels = month.name)) %>% 
+  arrange(MONTH_NAME) %>% 
+  ggplot(aes(MONTH_NAME, num_coastal_floods, group = 1)) + 
+  geom_point() + 
+  geom_line() +
+  labs(x = "Month", y = "Number of Coastal Floods") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+#lakeshore floods in 2020
+plot4 <- noaa2020 %>% filter(EVENT_TYPE=="Lakeshore Flood") %>% 
+  group_by(MONTH_NAME) %>% summarize(num_lakeshore_floods = n()) %>% 
+  add_row(MONTH_NAME = "August", num_lakeshore_floods = 0) %>% 
+  add_row(MONTH_NAME = "December", num_lakeshore_floods = 0) %>% 
+  mutate(MONTH_NAME = factor(MONTH_NAME, levels = month.name)) %>% 
+  arrange(MONTH_NAME) %>% 
+  ggplot(aes(MONTH_NAME, num_lakeshore_floods, group = 1)) + 
+  geom_point() + 
+  geom_line() +
+  labs(x = "Month", y = "Number of Lakeshore Floods") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+#flash floods in 2021
+plot5 <- noaa2021 %>% filter(EVENT_TYPE=="Flash Flood") %>% 
+  group_by(MONTH_NAME) %>% summarize(num_flash_floods = n()) %>% 
+  mutate(MONTH_NAME = factor(MONTH_NAME, levels = month.name)) %>% 
+  arrange(MONTH_NAME) %>% 
+  ggplot(aes(MONTH_NAME, num_flash_floods, group = 1)) + 
+  geom_point() + 
+  geom_line() +
+  labs(x = "Month", y = "Number of Flash Floods") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+#floods in 2021
+plot6 <- noaa2021 %>% filter(EVENT_TYPE=="Flood") %>% 
+  group_by(MONTH_NAME) %>% summarize(num_floods = n()) %>% 
+  mutate(MONTH_NAME = factor(MONTH_NAME, levels = month.name)) %>% 
+  arrange(MONTH_NAME) %>% 
+  ggplot(aes(MONTH_NAME, num_floods, group = 1)) + 
+  geom_point() + 
+  geom_line() +
+  labs(x = "Month", y = "Number of Floods") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+#coastal floods in 2021
+plot7 <- noaa2021 %>% filter(EVENT_TYPE=="Coastal Flood") %>% 
+  group_by(MONTH_NAME) %>% summarize(num_coastal_floods = n()) %>% 
+  add_row(MONTH_NAME = "March", num_coastal_floods = 0) %>% 
+  add_row(MONTH_NAME = "April", num_coastal_floods = 0) %>% 
+  add_row(MONTH_NAME = "June", num_coastal_floods = 0) %>% 
+  add_row(MONTH_NAME = "August", num_coastal_floods = 0) %>% 
+  mutate(MONTH_NAME = factor(MONTH_NAME, levels = month.name)) %>% 
+  arrange(MONTH_NAME) %>% 
+  ggplot(aes(MONTH_NAME, num_coastal_floods, group = 1)) + 
+  geom_point() + 
+  geom_line() +
+  labs(x = "Month", y = "Number of Coastal Floods") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+#lakeshore floods in 2021
+plot8 <- noaa2021 %>% filter(EVENT_TYPE=="Lakeshore Flood") %>% 
+  group_by(MONTH_NAME) %>% summarize(num_lakeshore_floods = n()) %>% 
+  add_row(MONTH_NAME = "January", num_lakeshore_floods = 0) %>% 
+  add_row(MONTH_NAME = "February", num_lakeshore_floods = 0) %>% 
+  add_row(MONTH_NAME = "April", num_lakeshore_floods = 0) %>% 
+  add_row(MONTH_NAME = "June", num_lakeshore_floods = 0) %>% 
+  add_row(MONTH_NAME = "July", num_lakeshore_floods = 0) %>% 
+  add_row(MONTH_NAME = "August", num_lakeshore_floods = 0) %>% 
+  add_row(MONTH_NAME = "November", num_lakeshore_floods = 0) %>% 
+  mutate(MONTH_NAME = factor(MONTH_NAME, levels = month.name)) %>% 
+  arrange(MONTH_NAME) %>% 
+  ggplot(aes(MONTH_NAME, num_lakeshore_floods, group = 1)) + 
+  geom_point() + 
+  geom_line() +
+  labs(x = "Month", y = "Number of Lakeshore Floods") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+grid.arrange(plot1, plot2, plot3, plot4, ncol = 2)
+grid.arrange(plot5, plot6, plot7, plot8, ncol = 2)
+
 ```
 
 

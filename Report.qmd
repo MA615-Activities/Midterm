@@ -11,7 +11,7 @@ number-sections: true
 
 # Motivations and Initial Questions
 
-Floods are the most common natural disasters in the world. Floods can occur for a variety of reasons including sudden heavy rain from a hurricane or storm or simply when snow starts to quickly melt. Do all types of floods produce the same disastrous results or are some more common and more dangerous than others? Can a pattern be found in when certain floods occur throughout the year? Performing an exploratory data analysis on the most common natural disaster will allow us to answer these initial questions and develop more that relate to the perils of floods. 
+Floods are the most common natural disasters in the world. Floods can occur for a variety of reasons including sudden heavy rain from a hurricane or storm or simply when snow starts to quickly melt. Do all types of floods produce the same disastrous results or are some more common and more dangerous than others? Can a pattern be found in the occurrence of certain floods throughout the year? Performing an exploratory data analysis on the most common natural disaster will allow us to answer these initial questions and develop more that relate to the perils of floods. 
 
 # The Data
 

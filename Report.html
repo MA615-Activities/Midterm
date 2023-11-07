@@ -9,7 +9,7 @@
 <meta name="author" content="Maysen Pagan">
 <meta name="dcterms.date" content="2023-11-06">
 
-<title>Dangerous Floods in 2020 and 2021: Exploratory Data Analysis Report</title>
+<title>Dangerous Floods: Exploratory Data Analysis Report</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -47,7 +47,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Dangerous Floods in 2020 and 2021: Exploratory Data Analysis Report</h1>
+<h1 class="title">Dangerous Floods: Exploratory Data Analysis Report</h1>
 </div>
 
 
@@ -77,6 +77,7 @@ ul.task-list li input[type="checkbox"] {
 <p><img src="https://media-cldnry.s-nbcnews.com/image/upload/t_fit-1240w,f_auto,q_auto:best/rockcms/2023-10/231006-new-york-rain-flood-mjf-1533-49a371.jpg" class="img-fluid"></p>
 <section id="motivations-and-initial-questions" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Motivations and Initial Questions</h1>
+<p>Floods are the most common natural disasters in the world.</p>
 </section>
 <section id="the-data" class="level1" data-number="2">
 <h1 data-number="2"><span class="header-section-number">2</span> The Data</h1>
@@ -87,14 +88,14 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="fema" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="fema"><span class="header-section-number">2.2</span> FEMA</h2>
-<p>One of the datasets from FEMA is the Disaster Declarations Summary which provides information on all federally declared disasters beginning from the year 1953. The data lists the disaster declaration type of either a major disaster, fire management, or emergency declaration. Additionally, a more specific description of the incident is provided as variable <code>incidentType</code> as well as what recovery program was declared for the disaster. The other FEMA Disaster Summaries dataset proides information on financial assistance provided to the communities affected by select events. It includes the number of approved Individual Assistance requests, and individual, public assistance, and hazard mitigation grant amounts. The raw data can be found <a href="https://www.fema.gov/about/openfema/data-sets">here</a>.</p>
+<p>One of the datasets from FEMA is the Disaster Declarations Summary which provides information on all federally declared disasters beginning from the year 1953. The data lists the disaster declaration type of either a major disaster, fire management, or emergency declaration. Additionally, a more specific description of the incident is provided as variable <code>incidentType</code> as well as what recovery program was declared for the disaster. The other FEMA Disaster Summaries dataset provides information on financial assistance provided to the communities affected by select events. It includes the number of approved Individual Assistance requests, and individual, public assistance, and hazard mitigation grant amounts. The raw data can be found <a href="https://www.fema.gov/about/openfema/data-sets">here</a>.</p>
 </section>
 </section>
 <section id="data-organization-and-cleaning" class="level1" data-number="3">
 <h1 data-number="3"><span class="header-section-number">3</span> Data Organization and Cleaning</h1>
 <section id="dates-and-disaster-event" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="dates-and-disaster-event"><span class="header-section-number">3.1</span> Dates and Disaster Event</h2>
-<p>The first step in organizing the data to prepare for exploratory data analysis is filtering all the data sets to only include the disaster event of floods in the years 2020 and 2021. Both NOAA datasets are already filtered by year, so they were then filtered to contain rows where the variable <code>EVENT_TYPE</code> included the string <code>Flood</code>. Following this filter, the NOAA datasets in 2020 and 2021 include the injury, deaths, and property damage for flash floods, floods, coastal floods, and lakeshore floods. Additionally, the data from the FEMA Disaster Declarations Summary was filtered so that the variable <code>incidentType</code> only includes floods, severe storms, coastal storms, tropical storms, tsunamis, and typhoons that began in 2020 and 2021. Although all of these disasters are not explicitly floods, they were still included in analysis as they are disasters may have resulted in flooding in communities.</p>
+<p>The first step in organizing the data to prepare for exploratory data analysis is filtering all the data sets to only include the disaster event of floods in the years 2020 and 2021. Both NOAA datasets are already filtered by year, so they were then filtered to contain rows where the variable <code>EVENT_TYPE</code> included the string <code>Flood</code>. Following this filter, the NOAA datasets in 2020 and 2021 include the injury, deaths, and property damage for flash floods, floods, coastal floods, and lakeshore floods. Additionally, the data from the FEMA Disaster Declarations Summary was filtered so that the variable <code>incidentType</code> only includes floods, severe storms, coastal storms, tropical storms, tsunamis, typhoons, and hurricanes that began in 2020 and 2021. Although all of these disasters are not explicitly floods, they were still included in analysis as they are disasters may have resulted in flooding in communities.</p>
 </section>
 <section id="joining" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="joining"><span class="header-section-number">3.2</span> Joining</h2>
@@ -156,10 +157,31 @@ ul.task-list li input[type="checkbox"] {
 </div>
 </div>
 </div>
-<p>In both years, zero direct deaths and indirect deaths were reported from coastal floods and lakeshore floods. This confirms the hypothesis that the more frequently occurring floods and flash floods result in more deaths and are therefore more dangerous.</p>
-<p>In 2020, <a href="#fig-num.floods.2020">Figure&nbsp;1</a> shows that the most flash floods occurred in March. While there was a spike in the number of deaths in March, the most deaths from flash floods was in the month of March. Similarly, in 2021, <a href="#fig-num.floods.2021">Figure&nbsp;2</a> depicts July having the most flash floods but the most deaths occurring in September with over 50 deaths.</p>
-<p>hurricane ida 2021 look at storms in september 2021, aid given</p>
+<p>In both years, zero direct deaths and indirect deaths were reported from coastal floods and lakeshore floods. This confirms the hypothesis that the more frequently occurring floods and flash floods result in more deaths and are therefore more dangerous. Additionally, on average, flash floods are more deadly and dangerous than any other flood.</p>
+<p>In 2020, <a href="#fig-num.floods.2020">Figure&nbsp;1</a> shows that the most flash floods occurred in August. While there was a spike in the number of deaths in August, the most deaths from flash floods was in the month of March. Similarly, in 2021, <a href="#fig-num.floods.2021">Figure&nbsp;2</a> depicts July having the most flash floods but the most deaths occurring in September with over 50 deaths. I continue my analysis of the most dangerous floods by looking closer at the flash floods in September of 2021 that resulted in over 50 deaths.</p>
 </section>
+<section id="floods-resulting-from-hurricane-ida" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="floods-resulting-from-hurricane-ida"><span class="header-section-number">4.3</span> Floods Resulting from Hurricane Ida</h2>
+<p>I first looked at the disaster events that occurred in September of 2021 that lead to either direct or indirect deaths. Filtering the NOAA 2021 dataset , I discovered that there were a total of 33 such events that were flash floods mostly taking place in New York and New Jersey. Of these 33 flash floods, 31 of them contained the string “Ida” in the <code>EPISODE_NARRATIVE</code> column. This suggests that Hurricane Ida and the remnants of Hurricane Ida in September of 2021 brought about deathly flash floods to the communities on the east coast. Hurricane Ida is known as the most deadly natural disaster in the United States in 2021.</p>
+<p>I now look at all disaster events in 2021 that occurred as a result of Hurricane Ida, as declared by NOAA, based on the appearance of the string “Ida” in the <code>EPISODE_NARRATIVE</code> column. I also filtered the FEMA data to contain only those episodes with the appearance of “Ida” in <code>declarationTitle</code>. I wish to compare the total property damage in each state affected by Hurricane Ida to the total amount approved for the Individual and Households Program (IHP). The IHP provides services to individuals and households affected by a disaster. Are those states with large damages to property getting the necessary aid from FEMA?</p>
+<div class="cell">
+<div class="cell-output-display">
+<div id="fig-dam.aid" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="Report_files/figure-html/fig-dam.aid-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption class="figure-caption">Figure&nbsp;5: Total property damage compared to total amount approved for the Invidiual and Households Program for states affected by Hurricane Ida</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Taking the NOAA data on floods from Hurricane Ida, I created a dataframe that provided the total property damage for those states affected by the hurricane. The FEMA aid for Hurricane Ida was also organized into a dataframe that provided the total amount approved for the IHP for those states affected by the hurricane. <a href="#fig-dam.aid">Figure&nbsp;5</a> provides a comparison of total property damage to IHP aid for those states. Of those 14 states with reported property damage from Hurricane Ida, only 5 states were reported to have received IHP aid from FEMA. For Mississippi, Connecticut, and New Jersey, the total amount approved for the IHP surpassed that of the total property damage in the state. With the exception of Delaware, those states with close to $3 million or less in property damage did not receive aid for the IHP.</p>
+<p>It is also important to note that Louisiana was reported as having the highest amount approved for the IHP from Hurricane Ida at $1,241,154,772. However, NOAA had no reported property damage in Louisiana from Hurricane Ida. This may be a result of missing data and should be looked at further.</p>
+</section>
+</section>
+<section id="conclusions-and-future-work" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Conclusions and Future Work</h1>
+<p>An exploratory data analysis on the flood disasters in the United States in 2020 and 2021 revealed patterns in their timely occurrence and disastrous tendencies. Flash floods and normal floods are the most commonly occurring floods with more flash floods taking place during hurricane season and more normal floods taking place during the transition from winter to spring. Flash floods are the most dangerous and deadly types of floods, especially flash floods resulting from hurricanes. Looking closer at one example, Hurricane Ida in 2021, demonstrated the relationship between the total property damage and IHP aid approved for states affected by such a disastrous hurricane. Even states with hundreds of thousands of dollars in property were not reported as receiving approved aid for the IHP.</p>
+<p>Further analysis could be conducted with more data. The assistance data from FEMA only provides the aid provided by disaster number. This consolidates the assistance to a disaster that occurred in a state. Getting data that shows the aid provided to individual cities and counties would provide for an analysis on which communities are receiving more aid for the same disaster.</p>
 </section>
 
 </main>
